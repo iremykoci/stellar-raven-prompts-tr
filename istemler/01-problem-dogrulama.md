@@ -2,7 +2,7 @@
 
 [← Ana sayfa](../README.md)
 
-Bu prompt'lar, projenin somut bir ihtiyaçtan doğduğunu, bahane arayan bir teknoloji olmadığını kontrol etmene yardım ediyor. Kod yazmaya başlamadan önce kullan.
+Bu istemler, projenin somut bir ihtiyaçtan doğduğunu, bahane arayan bir teknoloji olmadığını kontrol etmene yardım ediyor. Kod yazmaya başlamadan önce kullan.
 
 ## A1. Problemi tanımla ve netleştir
 
@@ -42,7 +42,7 @@ Stellar'ın başka bir teknolojinin veremeyeceği bir değer kattığı adımı 
 Stellar'a gerçekten ihtiyacım var mı, yoksa süs olarak mı kullanıyorum, bunu anlamak istiyorum.
 Projem şu: [fikrini anlat] ve Stellar'ı şunun için kullanmayı planlıyorum: [kullanımı anlat].
 Aynı problemi blokzincir olmadan, klasik bir veritabanı ve banka entegrasyonuyla çözseydim ne olurdu, açıkla.
-Sonra somut argümanlarla Stellar'ı kullanmanın bana ne kazandırdığını (örneğin düşük ücretli ve hızlı ödeme, varlık çıkarma, şeffaflık, anchor ağıyla birlikte çalışabilirlik) ve bu değerin benim durumum için gerçek olup olmadığını söyle.
+Sonra somut argümanlarla Stellar'ı kullanmanın bana ne kazandırdığını (örneğin düşük ücretli ve hızlı ödeme, varlık çıkarma, şeffaflık, köprü kurum ağıyla birlikte çalışabilirlik) ve bu değerin benim durumum için gerçek olup olmadığını söyle.
 ```
 
 ## A5. Bugünkü alternatifle kıyasla

@@ -2,51 +2,51 @@
 
 [← Ana sayfa](../README.md)
 
-Soroban, Solidity değildir. Ethereum'daki bazı klasik hataları tasarım gereği önler (delegatecall yok, klasik reentrancy yok, yetkilendirme açıktır). Ama kendi hata türlerini getirir. Bunların en önemlisi, Ethereum'da karşılığı olmayan **depolama türleri ve TTL (arşivlenme)** konusudur.
+Soroban, Ethereum'un sözleşme dili Solidity'ye benzemez. Ethereum'daki bazı klasik hataları tasarım gereği önler (başka sözleşmenin kodunu kendi bağlamında çalıştırma yok, klasik yeniden giriş (reentrancy) saldırısı yok, yetkilendirme açıktır). Ama kendi hata türlerini getirir. Bunların en önemlisi, Ethereum'da karşılığı olmayan **depolama türleri ve yaşam süresi (TTL, arşivlenme)** konusudur.
 
-Bu dosyadaki prompt'lar Raven'daki resmi güvenlik rehberine ve `soroban-common-mistakes` skill'inin kontrol listesine dayanır. Hiçbiri profesyonel bir denetimin yerini tutmaz.
+Bu dosyadaki istemler Raven'daki resmi güvenlik rehberine ve `soroban-common-mistakes` becerisinin kontrol listesine dayanır. Hiçbiri profesyonel bir denetimin yerini tutmaz.
 
-## G1. Kontratımı incele
+## G1. Sözleşmemi incele
 
-Kontrat kodunu prompt'un altına yapıştır.
+Sözleşme kodunu istemin altına yapıştır.
 
 ```
-Stellar Raven'ı kullan ve Soroban güvenlik dokümantasyonuna dayan.
-Aşağıdaki Soroban kontratını şu beş kategoriye göre incele ve sadece gerçekten var olan sorunları raporla:
-1. Yetkilendirme: fon hareketi veya yönetici değişikliği yapan her fonksiyonda require_auth() var mı, doğru adres için mi çağrılıyor, initialize/__constructor iki kez çalışabilir mi?
-2. Depolama ve TTL: büyüyen veya kullanıcıya özel veri instance depolamada mı duruyor, kritik persistent veri için extend_ttl var mı, kalıcı olması gereken veri temporary'de mi, anahtarlar tipli bir enum mu?
-3. Matematik ve mantık: kontrolsüz aritmetik (checked_add vb. yok mu), bölmeden sonra çarpma, yuvarlama yönü, negatif veya sıfır tutar kontrolü, birikmesi gereken değerin üzerine yazılması, çekimden sonra bakiyenin düşülmemesi
-4. Dış çağrılar: parametre olarak alınan bir kontrat adresi doğrulanmadan çağrılıyor mu, oracle dönüşleri kontrol ediliyor mu, clawback veya donmuş trustline hesaba katılmış mı, kaymaya (slippage) karşı min_out ve son tarih var mı?
-5. Kod kalitesi: panic! yerine #[contracterror], güvensiz unwrap(), olay (event) yayınlanmayan durum değişiklikleri, test eksikliği, kodda gizli anahtar (S... ile başlayan), sabitlenmemiş soroban-sdk sürümü, sınırsız döngüler
+Stellar Raven'ı kullan ve Soroban güvenlik belgelerine dayan.
+Aşağıdaki Soroban sözleşmesini şu beş kategoriye göre incele ve sadece gerçekten var olan sorunları raporla:
+1. Yetkilendirme: Para hareketi veya yönetici değişikliği yapan her fonksiyonda require_auth() var mı, doğru adres için mi çağrılıyor, başlatma fonksiyonu (initialize/__constructor) iki kez çalışabilir mi?
+2. Depolama ve yaşam süresi: Büyüyen veya kullanıcıya özel veri instance depolamada mı duruyor, önemli persistent veri için extend_ttl var mı, kalıcı olması gereken veri temporary depolamada mı, anahtarlar tipli bir enum mu?
+3. Matematik ve mantık: Taşmaya karşı kontrolsüz aritmetik (checked_add vb. yok mu), bölmeden sonra çarpma, yuvarlama yönü, negatif veya sıfır tutar kontrolü, birikmesi gereken değerin üzerine yazılması, çekimden sonra bakiyenin düşülmemesi
+4. Dış çağrılar: Parametre olarak alınan bir sözleşme adresi doğrulanmadan çağrılıyor mu, fiyat verisi sağlayıcısından (oracle) gelen değerler kontrol ediliyor mu, geri alma (clawback) veya dondurulmuş güven hattı hesaba katılmış mı, fiyat kaymasına (slippage) karşı en az çıkış tutarı (min_out) ve son tarih var mı?
+5. Kod kalitesi: panic! yerine #[contracterror] kullanımı, güvensiz unwrap(), olay (event) yayınlamayan durum değişiklikleri, test eksikliği, kodda gizli anahtar (S... ile başlayan), sürümü sabitlenmemiş soroban-sdk, sınırsız döngüler
 
 Bulguları Kritik, Uyarı ve Bilgi başlıkları altında tablo halinde ver (kural, konum, bulgu, düzeltme). Her düzeltme somut kod önerisi içersin.
 
-[kontrat kodunu buraya yapıştır]
+[sözleşme kodunu buraya yapıştır]
 ```
 
-## G2. Depolama ve TTL tasarımı
+## G2. Depolama ve yaşam süresi tasarımı
 
 Soroban'a yeni başlayanların en çok zorlandığı konu.
 
 ```
-Stellar Raven'ı kullan ve Soroban depolama dokümantasyonuna dayan.
-Kontratımda şu verileri tutacağım: [verileri listele, örneğin yönetici adresi, kullanıcı bakiyeleri, grup üyeleri listesi, tek kullanımlık nonce'lar].
+Stellar Raven'ı kullan ve Soroban depolama belgelerine dayan.
+Sözleşmemde şu verileri tutacağım: [verileri listele, örneğin yönetici adresi, kullanıcı bakiyeleri, grup üyeleri listesi, tek kullanımlık numaralar (nonce)].
 Her veri için instance, persistent ve temporary depolamadan hangisini seçmem gerektiğini, nedeniyle birlikte bir tabloda göster.
-Arşivlenme (archival) nedir, arşivlenmiş bir veriye erişmeye çalışınca ne olur ve TTL'i ne zaman, ne kadar uzatmalıyım?
+Arşivlenme nedir, arşivlenmiş bir veriye erişmeye çalışınca ne olur ve yaşam süresini (TTL) ne zaman, ne kadar uzatmalıyım?
 Sınırsız büyüyebilecek bir liste varsa bunu nasıl parçalamam gerektiğini göster.
 ```
 
 ## G3. Demo öncesi hızlı güvenlik turu
 
-Son saatlerde, demo'dan önce:
+Son saatlerde, demodan önce:
 
 ```
-Demo'ya [kalan süreyi yaz] kaldı. Projemin yapısı şu: [kontratlar, frontend, backend, anahtar yönetimi].
-Canlı demo sırasında veya repom herkese açıldığında beni utandırabilecek güvenlik sorunlarını öncelik sırasıyla listele:
-- Repoda veya frontend kodunda gizli anahtar, API anahtarı ya da .env dosyası var mı?
+Demoya [kalan süreyi yaz] kaldı. Projemin yapısı şu: [sözleşmeler, ön yüz, arka uç, anahtar yönetimi].
+Canlı demo sırasında veya kod deposu herkese açıldığında beni utandırabilecek güvenlik sorunlarını öncelik sırasıyla listele:
+- Kod deposunda veya ön yüz kodunda gizli anahtar, API anahtarı ya da .env dosyası var mı?
 - Kullanıcı anahtarları sunucuda saklanıyor mu (şifreli bile olsa)?
-- Testnet ile mainnet ayarları karışabilir mi?
-- Herkesin çağırabileceği ve çağırmaması gereken bir kontrat fonksiyonu var mı?
+- Test ağı ile ana ağ ayarları karışabilir mi?
+- Herkesin çağırabileceği ama çağırmaması gereken bir sözleşme fonksiyonu var mı?
 Her madde için 10 dakikada yapılabilecek bir düzeltme öner.
 ```
 
@@ -57,16 +57,16 @@ Entegre ettiğin bir protokolün güvenlik geçmişine bakmak için:
 ```
 Stellar Raven'ın scout.listAudits aracıyla "[protokol adı]" için yayımlanmış güvenlik denetim raporlarını getir.
 Her rapor için: denetimi yapan firma, yayımlanma tarihi, bulgu sayısı ve rapor bağlantısı.
-Bulgu sayısı boş gelirse bunu "sıfır bulgu" diye yorumlama, "çıkarılmamış" de. Hiç rapor bulunamazsa "denetlenmemiş" deme, "kayıtlarda denetim bulunamadı" de.
-Kontratımın bu protokolle etkileşen kısmında dikkat etmem gereken bir bulgu varsa işaretle.
+Bulgu sayısı boş gelirse bunu "sıfır bulgu" diye yorumlama, "bulgu sayısı çıkarılmamış" de. Hiç rapor bulunamazsa "denetlenmemiş" deme, "kayıtlarda denetim bulunamadı" de.
+Sözleşmemin bu protokolle etkileşen kısmında dikkat etmem gereken bir bulgu varsa işaretle.
 ```
 
 ## G5. Otomatik araçlar
 
 ```
 Stellar Raven'ı kullan.
-Soroban kontratım için kullanabileceğim otomatik güvenlik araçlarını (statik analiz, fuzzing, formal doğrulama) listele.
-Her biri için ne yaptığını, nasıl kurulacağını ve CI'a nasıl ekleneceğini kısaca anlat.
+Soroban sözleşmem için kullanabileceğim otomatik güvenlik araçlarını (durağan analiz, rastgele girdiyle test (fuzzing), biçimsel doğrulama) listele.
+Her biri için ne yaptığını, nasıl kurulacağını ve sürekli entegrasyona (CI) nasıl ekleneceğini kısaca anlat.
 Hackathon süresinde en az emekle en çok fayda sağlayacak olanı öner.
 ```
 
@@ -74,13 +74,13 @@ Hackathon süresinde en az emekle en çok fayda sağlayacak olanı öner.
 
 ## Demo öncesi kontrol listesi
 
-- [ ] Repoda `S...` ile başlayan hiçbir gizli anahtar yok, `.env` dosyası `.gitignore` içinde.
-- [ ] Fon hareket ettiren her fonksiyon `require_auth()` çağırıyor.
+- [ ] Kod deposunda `S...` ile başlayan hiçbir gizli anahtar yok, `.env` dosyası `.gitignore` içinde.
+- [ ] Para hareket ettiren her fonksiyon `require_auth()` çağırıyor.
 - [ ] Başlatma fonksiyonu iki kez çalıştırılamıyor.
-- [ ] Kullanıcıya özel veriler persistent depolamada ve TTL uzatılıyor.
+- [ ] Kullanıcıya özel veriler persistent depolamada ve yaşam süreleri uzatılıyor.
 - [ ] Tutarlar için `checked_*` aritmetik kullanılıyor, `overflow-checks = true` açık.
 - [ ] Önemli durum değişiklikleri olay (event) yayınlıyor.
-- [ ] En az yetkilendirme ve aritmetik yolları için test var.
+- [ ] En azından yetkilendirme ve aritmetik yolları için test var.
 - [ ] Kullanıcı anahtarları sunucuda tutulmuyor.
 
 [← Önceki: 04 · Türkiye senaryoları](04-turkiye-senaryolari.md) · [Sonraki: 06 · İleri konular →](06-ileri-konular.md)
